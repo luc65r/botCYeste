@@ -1,0 +1,4 @@
+CREATE TABLE amimir_urls (
+  id INTEGER PRIMARY KEY NOT NULL,
+  url TEXT NOT NULL
+)

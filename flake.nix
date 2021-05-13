@@ -43,12 +43,16 @@
       devShell = pkgs.mkShell {
         nativeBuildInputs = with pkgs; [
           rustChannel.rust
+          diesel-cli
+          sqlite
         ];
 
         # rust-analyzer is broken with 1.50
-        # shellHook = ''
-        #   PATH="${pkgs.lib.makeBinPath [pkgs.rust-analyzer]}:$PATH"
-        # '';
+        shellHook = ''
+          PATH="${pkgs.lib.makeBinPath [pkgs.rust-analyzer]}:$PATH"
+        '';
+
+        DATABASE_URL = "db.sqlite3";
       };
     });
 }

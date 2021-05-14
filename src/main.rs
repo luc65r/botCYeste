@@ -28,6 +28,7 @@ use tracing_subscriber::{FmtSubscriber, EnvFilter};
 
 use commands::{
     amimir::*,
+    nickname::*,
 };
 
 struct DatabaseConnection;
@@ -50,7 +51,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(amimir)]
+#[commands(amimir, nickname)]
 struct General;
 
 #[tokio::main]

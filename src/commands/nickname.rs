@@ -16,7 +16,7 @@ pub async fn nickname(ctx: &Context, msg: &Message, _args: Args) -> CommandResul
     info!("{} asked to change nickname", msg.author);
     msg.reply(
         &ctx,
-        "https://cdn.discordapp.com/attachments/750675988534394951/842066518576857155/alllah.png",
+        "https://cdn.discordapp.com/attachments/750673510656901223/842843913789112340/nivkname.jpg",
     ).await?;
 
     if let Some(answer) = msg.channel_id.await_reply(&ctx).await {

@@ -38,7 +38,7 @@
         pname = "botCYeste";
         version = "0.2.0";
         src = self;
-        cargoSha256 = "Q8azSW9Ps4vie26FSHYetLxGkyiwXU6VZvpFzpqmMSs=";
+        cargoSha256 = "jEwa6NcEdOxIahRw/Sh8OGn9jKdlckbUvK/XHqiSzoM=";
         buildInputs = [
           sqlite
         ];

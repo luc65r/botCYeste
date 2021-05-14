@@ -37,6 +37,7 @@ pub async fn amimir(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
     match args.single::<String>().as_deref() {
         Ok("add") => {
             if let Ok(new_url) = args.single::<String>() {
+                info!("{} asked to add {} to amimir", msg.author, new_url);
                 if check_url(&new_url).await {
                     let inserted = with_db!(ctx, |db| insert_amimir(db, &new_url))?;
                     if inserted {
@@ -61,6 +62,7 @@ pub async fn amimir(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
 
         Ok("del") => {
             if let Ok(old_url) = args.single::<String>() {
+                info!("{} asked to del {} to amimir", msg.author, old_url);
                 let deleted = with_db!(ctx, |db| delete_amimir(db, &old_url))?;
                 if deleted {
                     msg.react(&ctx.http, ReactionType::Unicode(String::from("👍")))
@@ -70,6 +72,7 @@ pub async fn amimir(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
                         .await?;
                 }
             } else {
+                info!("{} asked to del last link to amimir", msg.author);
                 let deleted_url = with_db!(ctx, delete_last_amimir)?;
                 msg.reply(&ctx.http, if let Some(u) = deleted_url {
                     format!("<{}> supprimé", u)

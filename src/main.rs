@@ -5,9 +5,7 @@ mod commands;
 mod schema;
 mod models;
 
-use std::{
-    env,
-};
+use std::env;
 
 use diesel::{
     prelude::*,
@@ -16,14 +14,14 @@ use diesel::{
 use dotenv::dotenv;
 use serenity::{
     async_trait,
-    prelude::*,
-    model::prelude::*,
-    framework::{
-        StandardFramework,
-        standard::macros::group,
+    framework::standard::{
+        CommandResult, StandardFramework,
+        macros::{group, hook}
     },
+    model::prelude::*,
+    prelude::*
 };
-use tracing::info;
+use tracing::{error, info};
 use tracing_subscriber::{FmtSubscriber, EnvFilter};
 
 use commands::{
@@ -50,6 +48,20 @@ impl EventHandler for Handler {
     }
 }
 
+#[hook]
+#[instrument]
+async fn before_hook(_ctx: &Context, msg: &Message, cmd_name: &str) -> bool {
+    info!("got command {} from {}", cmd_name, msg.author);
+    true
+}
+
+#[hook]
+async fn after_hook(_ctx: &Context, _msg: &Message, cmd_name: &str, error: CommandResult) {
+    if let Err(err) = error {
+        error!("in {}: {}", cmd_name, err);
+    }
+}
+
 #[group]
 #[commands(amimir, nickname)]
 struct General;
@@ -71,6 +83,8 @@ async fn main() {
 
     let framework = StandardFramework::new()
         .configure(|c| c.prefix(":"))
+        .before(before_hook)
+        .after(after_hook)
         .group(&GENERAL_GROUP);
 
     let mut client = Client::builder(token)

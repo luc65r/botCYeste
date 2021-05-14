@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use diesel::{
     prelude::*,
     dsl::{select, exists, insert_into, delete, max},
@@ -35,14 +37,21 @@ pub async fn amimir(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
     match args.single::<String>().as_deref() {
         Ok("add") => {
             if let Ok(new_url) = args.single::<String>() {
-                // TODO: check if valid url
-                let inserted = with_db!(ctx, |db| insert_amimir(db, &new_url))?;
-                if inserted {
-                    msg.react(&ctx.http, ReactionType::Unicode(String::from("👍")))
-                        .await?;
+                if check_url(&new_url).await {
+                    let inserted = with_db!(ctx, |db| insert_amimir(db, &new_url))?;
+                    if inserted {
+                        msg.react(&ctx.http, ReactionType::Unicode(String::from("👍")))
+                            .await?;
+                    } else {
+                        msg.reply(&ctx.http, format!("<{}> est déjà dans la liste des liens", new_url))
+                            .await?;
+                    }
                 } else {
-                    msg.reply(&ctx.http, format!("<{}> est déjà dans la liste des liens", new_url))
-                        .await?;
+                    warn!("{} isn't a valid link", new_url);
+                    msg.reply(&ctx.http, format!(
+                        "<{}> n'est pas un lien valide, ou le site n'est pas atteignable",
+                        new_url,
+                    )).await?;
                 }
             } else {
                 warn!("amimir add without url");
@@ -136,4 +145,12 @@ fn delete_last_amimir(db: &SqliteConnection) -> QueryResult<Option<String>> {
         warn!("cannot get max id");
         Ok(None)
     }
+}
+
+async fn check_url(u: &str) -> bool {
+    info!("checking if {} is a valid link", u);
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(10))
+        .build().unwrap();
+    client.get(u).send().await.map_or(false, |r| r.status().is_success())
 }

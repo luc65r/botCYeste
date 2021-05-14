@@ -82,6 +82,7 @@ dependencies = [
  "diesel",
  "dotenv",
  "rand 0.8.3",
+ "reqwest",
  "serenity",
  "tokio",
  "tracing",

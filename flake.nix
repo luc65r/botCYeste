@@ -35,9 +35,13 @@
         rustc = rustChannel.rust;
         cargo = rustChannel.rust;
       }).buildRustPackage {
-        name = "botCYeste";
+        pname = "botCYeste";
+        version = "0.1.0";
         src = self;
-        cargoSha256 = lib.fakeSha256;
+        cargoSha256 = "b0mODOgktie4zlYFPqCfBhxyAzASv0gqipV8j7jvFqg=";
+        buildInputs = [
+          sqlite
+        ];
       };
 
       devShell = pkgs.mkShell {

@@ -74,12 +74,16 @@ async fn main() {
         .with_env_filter(EnvFilter::from_default_env())
         .finish();
 
-    tracing::subscriber::set_global_default(subscriber).unwrap();
+    tracing::subscriber::set_global_default(subscriber)
+        .expect("failed to set the global defaut subscriber");
 
-    let db_url = env::var("DATABASE_URL").unwrap();
-    let conn = SqliteConnection::establish(&db_url).unwrap();
+    let db_url = env::var("DATABASE_URL")
+        .expect("failed to get the database url/path");
+    let conn = SqliteConnection::establish(&db_url)
+        .expect("failed to establish connection with SQLite");
 
-    let token = env::var("DISCORD_TOKEN").unwrap();
+    let token = env::var("DISCORD_TOKEN")
+        .expect("failed to get the Discord token");
 
     let framework = StandardFramework::new()
         .configure(|c| c.prefix(":"))
@@ -90,12 +94,14 @@ async fn main() {
     let mut client = Client::builder(token)
         .framework(framework)
         .event_handler(Handler)
-        .await.unwrap();
+        .await
+        .expect("client builder failed");
 
     {
         let mut data = client.data.write().await;
         data.insert::<DatabaseConnection>(Mutex::new(conn));
     }
 
-    client.start().await.unwrap();
+    client.start().await
+        .expect("client failed");
 }

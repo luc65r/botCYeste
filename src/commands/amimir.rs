@@ -33,7 +33,6 @@ macro_rules! with_db {
 
 #[command]
 pub async fn amimir(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    // TODO: errors
     match args.single::<String>().as_deref() {
         Ok("add") => {
             if let Ok(new_url) = args.single::<String>() {
@@ -49,14 +48,14 @@ pub async fn amimir(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
                     }
                 } else {
                     warn!("{} isn't a valid link", new_url);
-                    msg.reply(&ctx.http, format!(
+                    msg.reply(ctx, format!(
                         "<{}> n'est pas un lien valide, ou le site n'est pas atteignable",
                         new_url,
                     )).await?;
                 }
             } else {
                 warn!("amimir add without url");
-                msg.reply(&ctx.http, "Il manque le lien").await?;
+                msg.reply(ctx, "Il manque le lien").await?;
             }
         },
 
@@ -65,16 +64,16 @@ pub async fn amimir(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
                 info!("{} asked to del {} to amimir", msg.author, old_url);
                 let deleted = with_db!(ctx, |db| delete_amimir(db, &old_url))?;
                 if deleted {
-                    msg.react(&ctx.http, ReactionType::Unicode(String::from("👍")))
+                    msg.react(ctx, ReactionType::Unicode(String::from("👍")))
                         .await?;
                 } else {
-                    msg.reply(&ctx.http, format!("<{}> n'était pas dans la liste", old_url))
+                    msg.reply(ctx, format!("<{}> n'était pas dans la liste", old_url))
                         .await?;
                 }
             } else {
                 info!("{} asked to del last link to amimir", msg.author);
                 let deleted_url = with_db!(ctx, delete_last_amimir)?;
-                msg.reply(&ctx.http, if let Some(u) = deleted_url {
+                msg.reply(ctx, if let Some(u) = deleted_url {
                     format!("<{}> supprimé", u)
                 } else {
                     String::from("Auncun lien n'a été supprimé")
@@ -84,13 +83,13 @@ pub async fn amimir(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
 
         Ok(s) => {
             warn!("unknown amimir command: {}", s);
-            msg.reply(&ctx.http, format!("Commande `{}` inconnue", s))
+            msg.reply(ctx, format!("Commande `{}` inconnue", s))
                 .await?;
         },
 
         Err(_) => {
             let rand_url: String = with_db!(ctx, get_random_amimir)?;
-            msg.channel_id.say(&ctx.http, rand_url).await?;
+            msg.channel_id.say(ctx, rand_url).await?;
         },
     }
 
@@ -155,5 +154,6 @@ async fn check_url(u: &str) -> bool {
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(10))
         .build().unwrap();
+
     client.get(u).send().await.map_or(false, |r| r.status().is_success())
 }

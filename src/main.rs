@@ -5,7 +5,10 @@ mod commands;
 mod schema;
 mod models;
 
-use std::env;
+use std::{
+    env,
+    time::SystemTime
+};
 
 use diesel::{
     prelude::*,
@@ -28,12 +31,19 @@ use commands::{
     amimir::*,
     nickname::*,
     user::*,
+    uptime::*,
 };
 
 struct DatabaseConnection;
 
 impl TypeMapKey for DatabaseConnection {
     type Value = Mutex<SqliteConnection>;
+}
+
+struct Uptime;
+
+impl TypeMapKey for Uptime {
+    type Value = SystemTime;
 }
 
 struct Handler;
@@ -64,7 +74,7 @@ async fn after_hook(_ctx: &Context, _msg: &Message, cmd_name: &str, error: Comma
 }
 
 #[group]
-#[commands(amimir, nickname, user)]
+#[commands(amimir, nickname, user, uptime)]
 struct General;
 
 #[tokio::main]
@@ -101,6 +111,7 @@ async fn main() {
     {
         let mut data = client.data.write().await;
         data.insert::<DatabaseConnection>(Mutex::new(conn));
+        data.insert::<Uptime>(SystemTime::now());
     }
 
     client.start().await

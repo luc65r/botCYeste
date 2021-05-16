@@ -27,6 +27,7 @@ use tracing_subscriber::{FmtSubscriber, EnvFilter};
 use commands::{
     amimir::*,
     nickname::*,
+    user::*,
 };
 
 struct DatabaseConnection;
@@ -63,7 +64,7 @@ async fn after_hook(_ctx: &Context, _msg: &Message, cmd_name: &str, error: Comma
 }
 
 #[group]
-#[commands(amimir, nickname)]
+#[commands(amimir, nickname, user)]
 struct General;
 
 #[tokio::main]

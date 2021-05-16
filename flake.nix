@@ -55,8 +55,6 @@
         shellHook = ''
           PATH="${pkgs.lib.makeBinPath [pkgs.rust-analyzer]}:$PATH"
         '';
-
-        DATABASE_URL = "db.sqlite3";
       };
     });
 }

@@ -9,8 +9,11 @@ edition = "2018"
 [dependencies]
 diesel = { version = "1.4", features = ["sqlite"] }
 dotenv = "0.15"
+image = "0.23"
+imageproc = "0.22"
 rand = "0.8"
 reqwest = { version = "0.11", default-features = false }
+rusttype = "0.9"
 serenity = { version = "0.10", features = ["collector"] }
 tokio = { version = "1.5", features = ["full"] }
 tracing = "0.1"

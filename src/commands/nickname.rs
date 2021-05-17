@@ -24,7 +24,10 @@ use serenity::{
 use tokio::time::sleep;
 use tracing::{info, warn};
 
-use crate::NicknameTimeout;
+use crate::{
+    NicknameTimeout,
+    utils::format_duration,
+};
 
 #[command]
 pub async fn nickname(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
@@ -41,7 +44,7 @@ pub async fn nickname(ctx: &Context, msg: &Message, _args: Args) -> CommandResul
     };
     if let Some(d) = timeout {
         warn!("{} is still in nickname timeout for {}s", msg.author, d.as_secs());
-        msg.reply(ctx, "tu es en timeout")
+        msg.reply(ctx, format!("Tu es en timeout pour encore {}.", format_duration(d)))
             .await?;
         return Ok(());
     }

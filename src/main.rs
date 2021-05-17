@@ -4,6 +4,7 @@ extern crate diesel;
 mod commands;
 mod schema;
 mod models;
+mod utils;
 
 use std::{
     env,

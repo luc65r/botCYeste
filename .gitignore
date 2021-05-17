@@ -2,3 +2,4 @@
 .env
 .direnv
 *.sqlite3
+result

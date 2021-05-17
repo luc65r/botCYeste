@@ -32,6 +32,7 @@ use commands::{
     nickname::*,
     user::*,
     uptime::*,
+    edt::*,
 };
 
 struct DatabaseConnection;
@@ -74,7 +75,7 @@ async fn after_hook(_ctx: &Context, _msg: &Message, cmd_name: &str, error: Comma
 }
 
 #[group]
-#[commands(amimir, nickname, user, uptime)]
+#[commands(amimir, nickname, user, uptime, edt)]
 struct General;
 
 #[tokio::main]

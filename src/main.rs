@@ -7,7 +7,8 @@ mod models;
 
 use std::{
     env,
-    time::SystemTime
+    time::SystemTime,
+    collections::HashMap,
 };
 
 use diesel::{
@@ -45,6 +46,12 @@ struct Uptime;
 
 impl TypeMapKey for Uptime {
     type Value = SystemTime;
+}
+
+struct NicknameTimeout;
+
+impl TypeMapKey for NicknameTimeout {
+    type Value = Mutex<HashMap<UserId, SystemTime>>;
 }
 
 struct Handler;
@@ -113,6 +120,7 @@ async fn main() {
         let mut data = client.data.write().await;
         data.insert::<DatabaseConnection>(Mutex::new(conn));
         data.insert::<Uptime>(SystemTime::now());
+        data.insert::<NicknameTimeout>(Mutex::new(HashMap::new()));
     }
 
     client.start().await

@@ -1,6 +1,6 @@
 use std::{
     error::Error,
-    time::Duration,
+    time::{Duration, SystemTime},
     borrow::Cow,
     io::Cursor,
 };
@@ -24,8 +24,28 @@ use serenity::{
 use tokio::time::sleep;
 use tracing::{info, warn};
 
+use crate::NicknameTimeout;
+
 #[command]
 pub async fn nickname(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+    let now = SystemTime::now();
+
+    let timeout: Option<Duration> = {
+        let data = ctx.data.read().await;
+        let timeouts = data.get::<NicknameTimeout>()
+            .ok_or("cannot get nickname timeouts")?
+            .lock().await;
+
+        timeouts.get(&msg.author.id)
+            .and_then(|st| st.duration_since(now).ok())
+    };
+    if let Some(d) = timeout {
+        warn!("{} is still in nickname timeout for {}s", msg.author, d.as_secs());
+        msg.reply(ctx, "tu es en timeout")
+            .await?;
+        return Ok(());
+    }
+
     let user: &User = msg.mentions.get(0)
         .unwrap_or(&msg.author);
 
@@ -53,6 +73,14 @@ pub async fn nickname(ctx: &Context, msg: &Message, _args: Args) -> CommandResul
     );
     guild.edit_member(ctx, user.id, |m| m.nickname(&new_nickname))
         .await?;
+
+    {
+        let data = ctx.data.read().await;
+        let mut timeouts = data.get::<NicknameTimeout>()
+            .ok_or("cannot get nickname timeouts")?
+            .lock().await;
+        timeouts.insert(msg.author.id, now + Duration::from_secs(60 * 60));
+    }
 
     sleep(Duration::from_secs(3 * 60 * 60)).await;
     if user.nick_in(ctx, guild).await == Some(new_nickname) {

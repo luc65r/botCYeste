@@ -5,7 +5,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     mozilla = {
-      url = "github:mozilla/nixpkgs-mozilla";
+      url = "github:andersk/nixpkgs-mozilla/stdenv.lib";
       flake = false;
     };
   };

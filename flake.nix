@@ -2,59 +2,60 @@
   description = "A very basic flake";
 
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    mozilla = {
-      url = "github:andersk/nixpkgs-mozilla/stdenv.lib";
-      flake = false;
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    naersk = {
+      url = "github:nix-community/naersk";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, mozilla }:
+  outputs = { self, nixpkgs, flake-utils, fenix, naersk }:
     flake-utils.lib.eachDefaultSystem (system: let
-      rustOverlay = final: prev: let
-        rustChannel = prev.rustChannelOf {
-          channel = "1.52.1";
-          sha256 = "6eRkXrYqS/7BYlx7OBw44/phnDKN6l9IZjSt3eh78ZQ=";
-        };
-      in {
-        inherit rustChannel;
-        rustc = rustChannel.rust;
-        cargo = rustChannel.rust;
-      };
-
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [
-          (import "${mozilla}/rust-overlay.nix")
-          rustOverlay
-        ];
       };
+      lib = pkgs.lib;
+
+      rust-nightly = fenix.packages.${system};
+      naersk-lib = let
+        toolchain = with rust-nightly; combine (with minimal; [
+          cargo rustc
+        ]);
+      in naersk.lib.${system}.override {
+        cargo = toolchain;
+        rustc = toolchain;
+      };
+
+      buildInputs = with pkgs; [
+        sqlite
+      ];
     in {
-      defaultPackage = with pkgs; (makeRustPlatform {
-        rustc = rustChannel.rust;
-        cargo = rustChannel.rust;
-      }).buildRustPackage {
-        pname = "botCYeste";
-        version = "0.2.0";
-        src = self;
-        cargoSha256 = "scdjt9vRryouSCZgOiJutTU4v+/xNmf8Wnd5GlrqfWo=";
-        buildInputs = [
-          sqlite
-        ];
+      devShell = pkgs.mkShell {
+        nativeBuildInputs = lib.singleton (with rust-nightly; combine (with default; [
+          cargo
+          rustc
+          rust-std
+          clippy-preview
+          rustfmt-preview
+          latest.rust-src
+        ])) ++ (with pkgs; [
+          rust-nightly.rust-analyzer
+          cargo-expand
+          diesel-cli
+        ]) ++ buildInputs;
       };
 
-      devShell = pkgs.mkShell {
-        nativeBuildInputs = with pkgs; [
-          rustChannel.rust
-          diesel-cli
-          sqlite
-        ];
-
-        # rust-analyzer is broken with 1.50
-        shellHook = ''
-          PATH="${pkgs.lib.makeBinPath [pkgs.rust-analyzer]}:$PATH"
-        '';
+      defaultPackage = naersk-lib.buildPackage {
+        src = ./.;
+        inherit buildInputs;
       };
     });
 }

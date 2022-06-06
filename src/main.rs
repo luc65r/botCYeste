@@ -111,7 +111,7 @@ async fn main() {
         .after(after_hook)
         .group(&GENERAL_GROUP);
 
-    let mut client = Client::builder(token)
+    let mut client = Client::builder(token, GatewayIntents::default())
         .framework(framework)
         .event_handler(Handler)
         .await

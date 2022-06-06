@@ -9,12 +9,12 @@ edition = "2018"
 [dependencies]
 diesel = { version = "1.4", features = ["sqlite"] }
 dotenv = "0.15"
-image = "0.23"
-imageproc = "0.22"
+image = "0.24"
+imageproc = "0.23"
 rand = "0.8"
 reqwest = { version = "0.11", default-features = false }
 rusttype = "0.9"
-serenity = { version = "0.10", features = ["collector"] }
-tokio = { version = "1.5", features = ["full"] }
+serenity = { version = "0.11", features = ["collector"] }
+tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
-tracing-subscriber = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

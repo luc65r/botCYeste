@@ -19,7 +19,6 @@ use serenity::{
         Args, CommandResult,
         macros::command,
     },
-    http::AttachmentType,
 };
 use tokio::time::sleep;
 use tracing::{info, warn};
@@ -131,8 +130,8 @@ fn gen_image(tag: &str) -> Result<Vec<u8>, Box<dyn Error + Sync + Send>> {
         "pendant 3h",
     );
 
-    let mut png: Vec<u8> = Vec::new();
+    let mut png: Cursor<Vec<u8>> = Cursor::new(Vec::new());
     image.write_to(&mut png, ImageOutputFormat::Png)?;
 
-    Ok(png)
+    Ok(png.into_inner())
 }

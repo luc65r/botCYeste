@@ -37,6 +37,11 @@ use commands::{
     edt::*,
 };
 
+const INTENTS: GatewayIntents = GatewayIntents::GUILD_MESSAGES
+    .union(GatewayIntents::GUILD_MESSAGE_REACTIONS)
+    .union(GatewayIntents::GUILD_INTEGRATIONS)
+    .union(GatewayIntents::MESSAGE_CONTENT);
+
 struct DatabaseConnection;
 
 impl TypeMapKey for DatabaseConnection {
@@ -111,7 +116,7 @@ async fn main() {
         .after(after_hook)
         .group(&GENERAL_GROUP);
 
-    let mut client = Client::builder(token, GatewayIntents::default())
+    let mut client = Client::builder(token, INTENTS)
         .framework(framework)
         .event_handler(Handler)
         .await
